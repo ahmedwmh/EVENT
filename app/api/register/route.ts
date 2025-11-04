@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { registrationSchema } from "@/lib/validation"
 import { rateLimit, sanitizeString, sanitizePhone } from "@/lib/security"
-import { sendWhatsAppMessage, generateRegistrationMessage } from "@/lib/whatsapp"
+import { sendWhatsAppMessage, sendWhatsAppImage, generateRegistrationMessage, generateQRCode } from "@/lib/whatsapp"
 import { getEventDate, formatEventDate } from "@/lib/date-utils"
 
 export async function POST(request: NextRequest) {
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      // Send WhatsApp confirmation message (non-blocking)
+      // Send WhatsApp confirmation message with QR Code (non-blocking)
       // Don't await - send in background so it doesn't block the response
       ;(async () => {
         try {
@@ -76,10 +76,23 @@ export async function POST(request: NextRequest) {
             formattedEventDate
           )
 
-          // Send WhatsApp message
-          await sendWhatsAppMessage({
+          // Generate QR Code with registration details
+          const qrCodeData = JSON.stringify({
+            name: sanitizedData.name,
+            phone: sanitizedData.phoneNumber,
+            city: sanitizedData.city,
+            eventDate: formattedEventDate,
+            registrationId: registration.id,
+          })
+
+          // Generate QR Code image
+          const qrCodeBase64 = await generateQRCode(qrCodeData)
+
+          // Send QR Code image with the message as caption (one message)
+          await sendWhatsAppImage({
             to: sanitizedData.phoneNumber,
-            body: whatsappMessage,
+            imageBase64: qrCodeBase64,
+            caption: whatsappMessage
           })
         } catch (whatsappError) {
           // Silently fail - don't block registration if WhatsApp fails

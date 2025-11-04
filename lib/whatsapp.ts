@@ -2,9 +2,18 @@
  * Send WhatsApp message using UltraMsg.com API
  */
 
+import QRCode from "qrcode"
+
 interface WhatsAppMessageParams {
   to: string
   body: string
+}
+
+interface WhatsAppImageParams {
+  to: string
+  imageUrl?: string
+  imageBase64?: string
+  caption?: string
 }
 
 /**
@@ -139,15 +148,129 @@ export async function sendWhatsAppMessage({ to, body }: WhatsAppMessageParams): 
 }
 
 /**
- * Generate registration confirmation message in Arabic
+ * Generate QR Code as base64 image
  */
+export async function generateQRCode(data: string): Promise<string> {
+  try {
+    // Generate QR Code as base64 data URL
+    const qrCodeDataUrl = await QRCode.toDataURL(data, {
+      width: 300,
+      margin: 2,
+      color: {
+        dark: "#000000",
+        light: "#FFFFFF"
+      }
+    })
+    // Extract base64 part (remove data:image/png;base64, prefix)
+    return qrCodeDataUrl.split(",")[1]
+  } catch (error) {
+    throw new Error("Failed to generate QR code")
+  }
+}
+
+/**
+ * Send WhatsApp image using UltraMsg.com API
+ */
+export async function sendWhatsAppImage({ to, imageUrl, imageBase64, caption }: WhatsAppImageParams): Promise<boolean> {
+  const token = process.env.MESSAGE_TOKEN
+  const instanceId = process.env.MESSAGE_INSTANCE_ID
+  const appUrl = (process.env.MESSAGE_APP_URL || "https://api.ultramsg.com").trim().replace(/\/+$/, "")
+
+  if (!token || !instanceId) {
+    return false
+  }
+
+  // Format phone number
+  const formattedPhone = formatPhoneForWhatsAppNoPlus(to)
+
+  try {
+    const myHeaders = new Headers()
+    myHeaders.append("Content-Type", "application/x-www-form-urlencoded")
+
+    const urlencoded = new URLSearchParams()
+    urlencoded.append("token", token)
+    urlencoded.append("to", formattedPhone)
+    
+    // Use imageUrl if provided, otherwise use base64
+    if (imageUrl) {
+      urlencoded.append("image", imageUrl)
+    } else if (imageBase64) {
+      // For base64, we need to send it as a data URL
+      urlencoded.append("image", `data:image/png;base64,${imageBase64}`)
+    } else {
+      return false
+    }
+    
+    if (caption) {
+      urlencoded.append("caption", caption)
+    }
+
+    const requestOptions: RequestInit = {
+      method: "POST",
+      headers: myHeaders,
+      body: urlencoded,
+      redirect: "follow" as RequestRedirect,
+    }
+
+    // Build URL for image endpoint
+    let url: string
+    if (appUrl.includes(instanceId)) {
+      const cleanAppUrl = appUrl.replace(/\/$/, "")
+      url = `${cleanAppUrl}/messages/image`
+    } else {
+      url = `${appUrl}/${instanceId}/messages/image`
+    }
+
+    const response = await fetch(url, requestOptions)
+    const result = await response.text()
+
+    // Try to parse JSON response
+    let parsedResult: any = null
+    try {
+      parsedResult = JSON.parse(result)
+    } catch (e) {
+      // Response is not JSON
+    }
+
+    // Check if response indicates success
+    if (parsedResult) {
+      const isSuccess = 
+        parsedResult.sent === true || 
+        parsedResult.sent === "true" ||
+        parsedResult.id ||
+        parsedResult.messageId ||
+        (parsedResult.error === false && parsedResult.sent !== false)
+      
+      if (isSuccess) {
+        return true
+      }
+      
+      if (parsedResult.error || parsedResult.errorMessage || parsedResult.message) {
+        return false
+      }
+      
+      if (parsedResult.sent === false) {
+        return false
+      }
+    }
+
+    if (!response.ok) {
+      return false
+    }
+
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
 export function generateRegistrationMessage(name: string, city: string, eventDate: string): string {
   return `مرحباً ${name} 👋
 
 تم استلام تسجيلك في تجمع الفنانين بنجاح! ✅
 
-📍 المدينة: الناصرية
-📅 تاريخ الحدث: 15-11-2025
+📍 المدينة: ${city}
+📅 تاريخ الحدث: ${eventDate}
 
 نحن سعداء بانضمامك إلينا. سيتم التواصل معك قريباً عبر رقم الهاتف المقدم للتفاصيل الإضافية.
 

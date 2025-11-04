@@ -460,9 +460,6 @@ export function RegistrationForm() {
                       />
                       </div>
                       <FieldError error={field.state.meta.errors[0]} />
-                      <p className="text-xs text-muted-foreground">
-                        مثال: 07901234567 أو +9647901234567
-                      </p>
                     </div>
                   )}
                 </form.Field>
