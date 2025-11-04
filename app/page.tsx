@@ -65,31 +65,35 @@ export default function Home() {
                   <Button
                     onClick={() => setShowForm(true)}
                     size="lg"
-                    className="animated-button w-full text-lg font-bold px-8 py-3 h-auto shadow-lg shadow-[#333333] hover:scale-105 active:scale-95 transition-all duration-300 ease-in-out hover:shadow-xl hover:shadow-primary/20"
+                    className="animated-button w-full text-lg font-bold px-8 py-4 h-auto shadow-lg shadow-[#333333] hover:scale-105 active:scale-95 transition-all duration-300 ease-in-out hover:shadow-xl hover:shadow-primary/20"
                   >
                     الحصول على التذكرة الان
                   </Button>
-                  <p className="text-[12px] mt-2">التذاكر مجانية (المقاعد محدودة)</p>
+                  <p className="text-[14px] mt-2">التذاكر مجانية (المقاعد محدودة)</p>
 
                 
-                  {/* 3 Logos Placeholders */}
-                  <div className="flex items-center justify-center gap-6 md:gap-8 mt-20">
-                    <div className="bg-muted/50 rounded-lg p-4 md:p-6 border border-border/50">
-                      <Calendar className="w-8 h-8 md:w-12 md:h-12 text-primary/70" />
-                    </div>
-                    <div className="bg-muted/50 rounded-lg p-4 md:p-6 border border-border/50">
-                      <Music className="w-8 h-8 md:w-12 md:h-12 text-primary/70" />
-                    </div>
-                    <div className="bg-muted/50 rounded-lg p-4 md:p-6 border border-border/50">
-                      <Users className="w-8 h-8 md:w-12 md:h-12 text-primary/70" />
-                    </div>
+                  {/* 4 Logos Placeholders */}
+
+                  <div className="flex items-center flex-col justify-center gap-6 md:gap-8 mt-20">
+
+                  <div className="bg-muted/50 rounded-lg p-4 md:p-6 border border-border/50">
+                        <img width={100}  className="object-cover" src="./images/0.png" alt="" />
+                  </div>
+                  <div className="flex items-center justify-center gap-6 md:gap-8 mt-10">
+                      <div className="bg-muted/50 rounded-lg p-4 md:p-6 border border-border/50">
+                          <img width={100}  className="object-cover" src="./images/1_.svg" alt="" />
+                      </div>
+                      <div className="bg-muted/50 rounded-lg p-4 md:p-6 border border-border/50">
+                        <img width={100}  className="object-cover" src="./images/3-.svg" alt="" />
+                      </div>
+                      <div className="bg-muted/50 rounded-lg p-4 md:p-6 border border-border/50">
+                        <img width={100}  className="object-cover" src="./images/4-.svg" alt="" />
+                      </div>
+                  </div>
+
                   </div>
                   </div>
 
-                  
-
-                 
-                  
                 </div>
               </>
             ) : (
