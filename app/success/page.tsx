@@ -133,11 +133,11 @@ function SuccessContent() {
             </div>
 
             {/* Important Information */}
-            <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <h4 className="font-semibold mb-2 text-blue-900 dark:text-blue-100">
+            <div className="bg-gray-800 dark:bg-gray-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <h4 className="font-semibold mb-2 text-gray-100 dark:text-blue-100">
                 معلومات مهمة
               </h4>
-              <ul className="space-y-2 text-sm text-blue-800 dark:text-blue-200 list-disc list-inside">
+              <ul className="space-y-2 text-sm text-gray-100 dark:text-blue-200 list-disc list-inside">
                 <li>سيتم التواصل معك قريباً عبر رقم الهاتف المقدم</li>
                 <li>احتفظ بهذه الصفحة كإثبات لتسجيلك</li>
                 <li>تأكد من أن رقم الهاتف صحيح ويمكن الوصول إليه</li>
@@ -147,14 +147,14 @@ function SuccessContent() {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <Button asChild className="flex-1" size="lg">
-                <Link href="/">
+                <Link href="/" className="flex  items-center justify-center p-2">
                   <Home className="w-4 h-4 ml-2" />
                   العودة للصفحة الرئيسية
                 </Link>
               </Button>
               <Button
                 variant="outline"
-                className="flex-1"
+                className="flex-1 p-2"
                 size="lg"
                 onClick={() => window.print()}
               >
