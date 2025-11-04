@@ -33,7 +33,7 @@ export default function Home() {
   return (
     <QueryClientProvider client={queryClient}>
       <main className="min-h-screen bg-gradient-to-br from-background via-accent/5 to-background flex flex-col">
-        <div className="container mx-auto px-4 py-8 md:py-16 flex-1">
+        <div className="container mx-auto px-4  md:py-16 flex-1">
           <div className="max-w-6xl mx-auto space-y-8 md:space-y-12">
             {!showForm ? (
               <>
@@ -74,7 +74,7 @@ export default function Home() {
                 
                   {/* 4 Logos Placeholders */}
 
-                  <div className="flex items-center flex-col justify-center gap-6 md:gap-8 mt-20">
+                  <div className="flex items-center flex-col justify-center gap-6 md:gap-8 mt-14">
 
                     <img width={100}  className="object-cover" src="./images/0.png" alt="" />
                   
