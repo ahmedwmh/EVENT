@@ -1,0 +1,142 @@
+"use client"
+
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { CountdownTimer } from "@/components/CountdownTimer"
+import { RegistrationForm } from "@/components/RegistrationForm"
+import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react"
+import { formatEventDate, getEventDate } from "@/lib/date-utils"
+import { Users, Calendar, Music } from "lucide-react"
+
+export default function Home() {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 60 * 1000,
+          },
+        },
+      })
+  )
+
+  const [showForm, setShowForm] = useState(false)
+  const [eventDate, setEventDate] = useState<Date | null>(null)
+  const [eventDateString, setEventDateString] = useState("")
+
+  useEffect(() => {
+    const date = getEventDate()
+    setEventDate(date)
+    setEventDateString(formatEventDate(date))
+  }, [])
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <main className="min-h-screen bg-gradient-to-br from-background via-accent/5 to-background flex flex-col">
+        <div className="container mx-auto px-4 py-8 md:py-16 flex-1">
+          <div className="max-w-4xl mx-auto space-y-8 md:space-y-12">
+            {!showForm ? (
+              <>
+                {/* Landing Page */}
+                <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-32">
+                  {/* Logo */}
+                  <div className="text-center space-y-6">
+                    <div className="flex items-center justify-center">
+                      <div className="bg-primary/10 rounded-full p-8 md:p-12">
+                        <Users className="w-16 h-16 md:w-24 md:h-24 text-primary" />
+                      </div>
+                    </div>
+                    <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                      تجمع الفنانين
+                    </h1>
+                    <p className="text-lg md:text-xl text-muted-foreground max-w-md">
+                      انضم إلى أكبر تجمع للفنانين من جميع أنحاء المنطقة
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col justify-center items-center ">
+                      {/* Register Button */}
+                  <Button
+                    onClick={() => setShowForm(true)}
+                    size="lg"
+                    className="text-lg px-8 py-3 h-auto"
+                  >
+                    التسجيل بالحفل
+                  </Button>
+
+                  <hr className="w-full border-t border-border/50 my-8" />
+                
+                  {/* 3 Logos Placeholders */}
+                  <div className="flex items-center justify-center gap-6 md:gap-8 mt-2">
+                    <div className="bg-muted/50 rounded-lg p-4 md:p-6 border border-border/50">
+                      <Calendar className="w-8 h-8 md:w-12 md:h-12 text-primary/70" />
+                    </div>
+                    <div className="bg-muted/50 rounded-lg p-4 md:p-6 border border-border/50">
+                      <Music className="w-8 h-8 md:w-12 md:h-12 text-primary/70" />
+                    </div>
+                    <div className="bg-muted/50 rounded-lg p-4 md:p-6 border border-border/50">
+                      <Users className="w-8 h-8 md:w-12 md:h-12 text-primary/70" />
+                    </div>
+                  </div>
+                  </div>
+
+                  
+
+                 
+                  
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Form Page */}
+                <div className="text-center space-y-4 mb-8">
+                  <h1 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                    تجمع الفنانين
+                  </h1>
+                  <p className="text-lg md:text-xl text-muted-foreground">
+                    انضم إلى أكبر تجمع للفنانين من جميع أنحاء المنطقة
+                  </p>
+                  {eventDateString && (
+                    <p className="text-base md:text-lg font-semibold text-primary">
+                      حدث مجاني • {eventDateString}
+                    </p>
+                  )}
+                </div>
+
+                {/* Countdown Timer */}
+                {eventDate && <CountdownTimer targetDate={eventDate} />}
+
+                {/* Registration Form */}
+                <RegistrationForm />
+
+                {/* Back Button */}
+                <div className="text-center">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowForm(false)}
+                  >
+                    العودة للصفحة الرئيسية
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+        
+        {/* Footer - Fixed at bottom */}
+        <footer className="w-full border-t border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container mx-auto px-4 py-6">
+            <div className="text-center space-y-2 text-sm text-muted-foreground">
+              <p>© 2025 تجمع الفنانين. جميع الحقوق محفوظة.</p>
+              <p className="text-xs">
+                Powered by{" "}
+                <span className="font-semibold text-primary">Masdar</span>
+              </p>
+            </div>
+          </div>
+        </footer>
+      </main>
+    </QueryClientProvider>
+  )
+}
+

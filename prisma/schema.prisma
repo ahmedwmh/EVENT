@@ -1,0 +1,48 @@
+// Prisma Schema for Event Registration - Optimized for Speed & Security
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // For Supabase, use the same DATABASE_URL for directUrl if DIRECT_URL is not set
+  directUrl = env("DIRECT_URL")
+}
+
+model Registration {
+  id          String   @id @default(uuid())
+  name        String   @db.VarChar(100)
+  phoneNumber String   @unique @map("phone_number") @db.VarChar(20)
+  city        String   @db.VarChar(100)
+  message     String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Indexes for fast queries
+  @@index([phoneNumber], name: "idx_registrations_phone")
+  @@index([city], name: "idx_registrations_city")
+  @@index([createdAt(sort: Desc)], name: "idx_registrations_created_at")
+  @@index([updatedAt(sort: Desc)], name: "idx_registrations_updated_at")
+  // Composite index for common queries
+  @@index([city, createdAt(sort: Desc)], name: "idx_registrations_city_created")
+  @@map("registrations")
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  username  String   @unique @db.VarChar(50)
+  password  String   @db.VarChar(255) // Hashed password
+  email     String?  @unique @db.VarChar(255)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Indexes for fast queries
+  @@index([username], name: "idx_admins_username")
+  @@index([email], name: "idx_admins_email")
+  @@index([isActive], name: "idx_admins_is_active")
+  @@index([createdAt(sort: Desc)], name: "idx_admins_created_at")
+  @@map("admins")
+}
