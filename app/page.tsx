@@ -34,7 +34,7 @@ export default function Home() {
     <QueryClientProvider client={queryClient}>
       <main className="min-h-screen bg-gradient-to-br from-background via-accent/5 to-background flex flex-col">
         <div className="container mx-auto px-4 py-8 md:py-16 flex-1">
-          <div className="max-w-4xl mx-auto space-y-8 md:space-y-12">
+          <div className="max-w-6xl mx-auto space-y-8 md:space-y-12">
             {!showForm ? (
               <>
                 {/* Landing Page */}
@@ -47,27 +47,33 @@ export default function Home() {
                       </div>
                     </div>
                     <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                      تجمع الفنانين
+                      مهرجان الاستثمار 
+                      <p className="text-[26px] text-white">للأعمار والتنمية</p>
                     </h1>
-                    <p className="text-lg md:text-xl text-muted-foreground max-w-md">
-                      انضم إلى أكبر تجمع للفنانين من جميع أنحاء المنطقة
-                    </p>
+                    
+
+                  
+                    
                   </div>
 
+                  
+                  
                   <div className="flex flex-col justify-center items-center ">
+                  <p className="text-2xl text-muted-foreground">2025-11-15</p>
+                  <hr className="w-full border-t border-border/50 my-8" />
                       {/* Register Button */}
                   <Button
                     onClick={() => setShowForm(true)}
                     size="lg"
-                    className="text-lg px-8 py-3 h-auto"
+                    className="animated-button w-full text-lg font-bold px-8 py-3 h-auto shadow-lg shadow-[#333333] hover:scale-105 active:scale-95 transition-all duration-300 ease-in-out hover:shadow-xl hover:shadow-primary/20"
                   >
-                    التسجيل بالحفل
+                    الحصول على التذكرة الان
                   </Button>
+                  <p className="text-[12px] mt-2">التذاكر مجانية (المقاعد محدودة)</p>
 
-                  <hr className="w-full border-t border-border/50 my-8" />
                 
                   {/* 3 Logos Placeholders */}
-                  <div className="flex items-center justify-center gap-6 md:gap-8 mt-2">
+                  <div className="flex items-center justify-center gap-6 md:gap-8 mt-20">
                     <div className="bg-muted/50 rounded-lg p-4 md:p-6 border border-border/50">
                       <Calendar className="w-8 h-8 md:w-12 md:h-12 text-primary/70" />
                     </div>
@@ -127,11 +133,15 @@ export default function Home() {
         <footer className="w-full border-t border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container mx-auto px-4 py-6">
             <div className="text-center space-y-2 text-sm text-muted-foreground">
-              <p>© 2025 تجمع الفنانين. جميع الحقوق محفوظة.</p>
+
+              <p>2025 جميع الحقوق محفوظة © . شركة الروابي الحديثة</p>
+
               <p className="text-xs">
+              <span className="font-semibold text-[16px] text-[#93C851]" >مصدر  </span>
                 Powered by{" "}
-                <span className="font-semibold text-primary">Masdar</span>
-              </p>
+                
+            </p>
+             
             </div>
           </div>
         </footer>
