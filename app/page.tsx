@@ -38,13 +38,13 @@ export default function Home() {
             {!showForm ? (
               <>
                 {/* Landing Page */}
-                <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-32">
+                <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-20">
                   {/* Logo */}
                   <div className="text-center space-y-6">
                     <div className="flex items-center justify-center">
-                      <div className="bg-primary/10 rounded-full p-8 md:p-12">
+                      {/* <div className="bg-primary/10 rounded-full p-8 md:p-12">
                         <Users className="w-16 h-16 md:w-24 md:h-24 text-primary" />
-                      </div>
+                      </div> */}
                     </div>
                     <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                       مهرجان الاستثمار 
@@ -76,18 +76,17 @@ export default function Home() {
 
                   <div className="flex items-center flex-col justify-center gap-6 md:gap-8 mt-20">
 
-                  <div className="bg-muted/50 rounded-lg p-4 md:p-6 border border-border/50">
-                        <img width={100}  className="object-cover" src="./images/0.png" alt="" />
-                  </div>
+                    <img width={100}  className="object-cover" src="./images/0.png" alt="" />
+                  
                   <div className="flex items-center justify-center gap-6 md:gap-8 mt-10">
                       <div className="bg-muted/50 rounded-lg p-4 md:p-6 border border-border/50">
-                          <img width={100}  className="object-cover" src="./images/1_.svg" alt="" />
+                          <img width={80}  className="object-cover" src="./images/1_.svg" alt="" />
                       </div>
                       <div className="bg-muted/50 rounded-lg p-4 md:p-6 border border-border/50">
-                        <img width={100}  className="object-cover" src="./images/3-.svg" alt="" />
+                        <img width={80}  className="object-cover" src="./images/3-.svg" alt="" />
                       </div>
                       <div className="bg-muted/50 rounded-lg p-4 md:p-6 border border-border/50">
-                        <img width={100}  className="object-cover" src="./images/4-.svg" alt="" />
+                        <img width={80}  className="object-cover" src="./images/4-.svg" alt="" />
                       </div>
                   </div>
 
