@@ -61,8 +61,8 @@ export function CountdownTimer({ targetDate }: CountdownTimerProps) {
   }, [targetDate])
 
   return (
-    <div className="text-center text-sm md:text-base text-muted-foreground">
-      <span>بدء المهرجان بعد </span>
+    <div className="text-center text-sm md:text-base text-muted-foreground ">
+      
       <span className="font-bold text-primary">{timeLeft.days}</span>
       <span> يوم و </span>
       <span className="font-bold text-primary">{timeLeft.hours}</span>

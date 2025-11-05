@@ -58,23 +58,24 @@ function SuccessContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-accent/5 to-background flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/5 to-background flex  justify-center p-4">
+      <div className="w-full max-w-2xl space-y-6 mt-10">
         {/* Success Icon */}
-        <div className="flex justify-center">
+        <div className="flex justify-center flex-col gap-4 items-center">
           <div className="relative">
-            <div className="absolute inset-0 bg-green-500 rounded-full blur-xl opacity-20 animate-pulse"></div>
-            <div className="relative bg-green-500/10 rounded-full p-6">
-              <CheckCircle2 className="w-20 h-20 text-green-500" />
+            
+          <div className="relative bg-green-500/10 rounded-full p-6">
+              <CheckCircle2 className="w-6 h-6 text-green-500" />
             </div>
           </div>
+          <p className="text-2xl font-bold text-white">تم التسجيل بنجاح! </p>
         </div>
 
         {/* Success Card */}
-        <Card className="border-2 border-green-500/20 shadow-xl">
+        <Card className="border-2 border-[#ba8943]/20 shadow-xl">
           <CardHeader className="text-center space-y-4">
             <CardTitle className="text-3xl md:text-4xl font-bold text-green-600">
-              تم التسجيل بنجاح! 🎉
+             
             </CardTitle>
             <CardDescription className="text-lg">
               تم استلام تسجيلك بنجاح في تجمع الفنانين
@@ -146,14 +147,9 @@ function SuccessContent() {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
-              <Button asChild className="flex-1" size="lg">
-                <Link href="/" className="flex  items-center justify-center p-2">
-                  <Home className="w-4 h-4 ml-2" />
-                  العودة للصفحة الرئيسية
-                </Link>
-              </Button>
+              
               <Button
-                variant="outline"
+                variant="secondary"
                 className="flex-1 p-2"
                 size="lg"
                 onClick={() => window.print()}

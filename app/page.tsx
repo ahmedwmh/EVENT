@@ -76,9 +76,9 @@ export default function Home() {
 
                   <div className="flex items-center flex-col justify-center gap-6 md:gap-8 mt-14">
 
-                    <img width={100}  className="object-cover" src="./images/0.png" alt="" />
+                    <img width={140}  className="object-cover" src="./images/0.png" alt="" />
                   
-                  <div className="flex items-center justify-center gap-6 md:gap-8 mt-10">
+                  <div className="flex items-center justify-center gap-6 md:gap-8 ">
                       <div className="bg-muted/50 rounded-lg p-4 md:p-6 border border-border/50">
                           <img width={80}  className="object-cover" src="./images/1_.svg" alt="" />
                       </div>
@@ -98,35 +98,19 @@ export default function Home() {
             ) : (
               <>
                 {/* Form Page */}
-                <div className="text-center space-y-4 mb-8">
-                  <h1 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                    تجمع الفنانين
-                  </h1>
-                  <p className="text-lg md:text-xl text-muted-foreground">
-                    انضم إلى أكبر تجمع للفنانين من جميع أنحاء المنطقة
-                  </p>
-                  {eventDateString && (
-                    <p className="text-base md:text-lg font-semibold text-primary">
-                      حدث مجاني • {eventDateString}
-                    </p>
-                  )}
+                <div className="text-center space-y-4  mt-8">
+                  
+                  <p className="text-4xl text-white">باقي على بدء المهرجان</p>
+                  {/* Countdown Timer */}
+                {eventDate && <CountdownTimer targetDate={eventDate} />}
                 </div>
 
-                {/* Countdown Timer */}
-                {eventDate && <CountdownTimer targetDate={eventDate} />}
+                
 
                 {/* Registration Form */}
                 <RegistrationForm />
 
-                {/* Back Button */}
-                <div className="text-center">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowForm(false)}
-                  >
-                    العودة للصفحة الرئيسية
-                  </Button>
-                </div>
+               
               </>
             )}
           </div>

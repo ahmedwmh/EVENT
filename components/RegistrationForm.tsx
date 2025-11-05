@@ -96,8 +96,53 @@ const FieldError = memo(({ error }: { error?: unknown }) => {
 })
 FieldError.displayName = "FieldError"
 
+async function sendOTP(phoneNumber: string) {
+  try {
+    const response = await fetch("/api/send-otp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ phoneNumber }),
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      const errorMessage = result.error || "فشل إرسال رمز التاكيد"
+      throw new Error(errorMessage)
+    }
+
+    return result.otp // Return OTP for verification (in production, verify server-side)
+  } catch (error: any) {
+    if (error.name === "TypeError" || error.message.includes("Failed to fetch")) {
+      throw new Error("فشل الاتصال بالخادم. يرجى التحقق من الاتصال بالإنترنت.")
+    }
+    throw error
+  }
+}
+
 export function RegistrationForm() {
   const router = useRouter()
+
+  // OTP state
+  const [otpCode, setOtpCode] = useState<string>("")
+  const [generatedOtp, setGeneratedOtp] = useState<string>("")
+  const [showOtpInput, setShowOtpInput] = useState<boolean>(false)
+  const [otpError, setOtpError] = useState<string>("")
+
+  // Mutation for sending OTP
+  const otpMutation = useMutation({
+    mutationFn: ({ phoneNumber }: { phoneNumber: string }) => sendOTP(phoneNumber),
+    onSuccess: (otp) => {
+      setGeneratedOtp(otp)
+      setShowOtpInput(true)
+      setOtpError("")
+    },
+    onError: (error) => {
+      setOtpError(error instanceof Error ? error.message : "فشل إرسال رمز التاكيد")
+    },
+  })
 
   // Mutation must be defined before form since it's used in onSubmit
   const mutation = useMutation({
@@ -263,9 +308,9 @@ export function RegistrationForm() {
       ) : (
         <Card className="border-2 border-primary/20 shadow-lg">
           <CardHeader>
-            <CardTitle className="text-2xl md:text-3xl">سجل في الحدث</CardTitle>
+            <CardTitle className="text-2xl md:text-3xl"></CardTitle>
             <CardDescription>
-              انضم إلى تجمع الفنانين المجاني واحجز مكانك الآن
+              
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -273,9 +318,31 @@ export function RegistrationForm() {
               onSubmit={async (e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                // Update validity before submitting
+                
+                // If OTP input is shown, verify OTP and submit registration
+                if (showOtpInput) {
+                  // Verify OTP
+                  if (otpCode.trim() !== generatedOtp) {
+                    setOtpError("رمز التاكيد غير صحيح. يرجى المحاولة مرة أخرى.")
+                    return
+                  }
+                  
+                  // OTP is correct, proceed with registration
+                  setOtpError("")
+                  updateFormValidity()
+                  await form.validateAllFields("submit")
+                  updateFormValidity()
+                  const hasErrors = form.state.fieldMeta.name?.errors?.length > 0 ||
+                                    form.state.fieldMeta.phoneNumber?.errors?.length > 0 ||
+                                    form.state.fieldMeta.city?.errors?.length > 0
+                  if (!hasErrors && form.state.values.name && form.state.values.phoneNumber && form.state.values.city) {
+                    form.handleSubmit()
+                  }
+                  return
+                }
+                
+                // If OTP input is not shown, validate form and send OTP
                 updateFormValidity()
-                // Validate all fields before submitting
                 await form.validateAllFields("submit")
                 updateFormValidity()
                 // Check if form is valid by checking individual field errors
@@ -283,7 +350,8 @@ export function RegistrationForm() {
                                   form.state.fieldMeta.phoneNumber?.errors?.length > 0 ||
                                   form.state.fieldMeta.city?.errors?.length > 0
                 if (!hasErrors && form.state.values.name && form.state.values.phoneNumber && form.state.values.city) {
-                  form.handleSubmit()
+                  // Form is valid, send OTP
+                  otpMutation.mutate({ phoneNumber: form.state.values.phoneNumber })
                 }
               }}
               className="space-y-4"
@@ -322,7 +390,7 @@ export function RegistrationForm() {
               >
                   {(field: any) => (
                     <div className="space-y-2">
-                      <Label htmlFor={field.name}>الاسم الكامل *</Label>
+                      <Label htmlFor={field.name}></Label>
                       <Input
                         id={field.name}
                         name={field.name}
@@ -392,22 +460,19 @@ export function RegistrationForm() {
                   {(field: any) => (
                     <div className="space-y-2">
                       <Label htmlFor={field.name} className="flex items-center gap-2">
-                        رقم الهاتف *
+                        
                        
                       </Label>
                       <div className="relative">
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-                          <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-                          </svg>
-                        </div>
+                        
                         <Input
                           id={field.name}
                           name={field.name}
                           type="tel"
                           value={field.state.value}
                           onBlur={field.handleBlur}
-                          className={field.state.meta.errors.length > 0 ? "border-destructive pr-10" : "pr-10"}
+                          className={field.state.meta.errors.length > 0 ? "border-destructive " : "pr-3"}
+                          dir="rtl"
                         onChange={(e) => {
                           let value = e.target.value
                           // Remove spaces and dashes for cleaner input
@@ -455,7 +520,7 @@ export function RegistrationForm() {
                             updateFormValidity()
                           }, 0)
                         }}
-                        placeholder="07901234567"
+                        placeholder="رقم الهاتف (واتساب)"
                         maxLength={15}
                       />
                       </div>
@@ -541,13 +606,86 @@ export function RegistrationForm() {
                 </form.Field>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full md:w-auto"
-                disabled={mutation.isPending || !isFormValid}
-              >
-                {mutation.isPending ? "جاري التسجيل..." : "سجل الآن"}
-              </Button>
+              {/* OTP Input - shown after clicking "سجل الآن" */}
+              {showOtpInput && (
+                <div className="space-y-2">
+                  <Label htmlFor="otp">رمز التاكيد *</Label>
+                  <div className="flex gap-2 items-start">
+                    <Input
+                      id="otp"
+                      name="otp"
+                      type="text"
+                      value={otpCode}
+                      onChange={(e) => {
+                        // Only allow 6 digits
+                        const value = e.target.value.replace(/\D/g, "").slice(0, 6)
+                        setOtpCode(value)
+                        setOtpError("")
+                      }}
+                      placeholder="أدخل رمز التاكيد (6 أرقام)"
+                      className={`flex-1 ${otpError ? "border-destructive" : ""}`}
+                      dir="ltr"
+                      maxLength={6}
+                    />
+                  </div>
+                  {otpError && (
+                    <div className="flex items-center gap-1 text-sm text-destructive mt-1">
+                      <AlertCircle className="w-4 h-4" />
+                      <span>{otpError}</span>
+                    </div>
+                  )}
+                  <p className="text-sm text-muted-foreground">
+                    تم إرسال رمز التاكيد إلى رقم الواتساب الخاص بك
+                  </p>
+                </div>
+              )}
+
+              {/* OTP Sending Error */}
+              {otpMutation.isError && !showOtpInput && (
+                <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>
+                    {otpMutation.error instanceof Error
+                      ? otpMutation.error.message
+                      : "فشل إرسال رمز التاكيد. يرجى المحاولة مرة أخرى."}
+                  </span>
+                </div>
+              )}
+
+              <div className="flex gap-2 items-center flex-wrap">
+                <Button
+                  type="submit"
+                  className="w-full md:w-auto"
+                  disabled={mutation.isPending || otpMutation.isPending || (!showOtpInput && !isFormValid) || (showOtpInput && !otpCode.trim())}
+                >
+                  {mutation.isPending 
+                    ? "جاري التسجيل..." 
+                    : otpMutation.isPending 
+                    ? "جاري إرسال رمز التاكيد..."
+                    : showOtpInput 
+                    ? "تأكيد والتسجيل" 
+                    : "سجل الآن"}
+                </Button>
+                
+                {showOtpInput && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full md:w-auto"
+                    onClick={() => {
+                      // Resend OTP
+                      if (form.state.values.phoneNumber) {
+                        otpMutation.mutate({ phoneNumber: form.state.values.phoneNumber })
+                        setOtpCode("")
+                        setOtpError("")
+                      }
+                    }}
+                    disabled={otpMutation.isPending}
+                  >
+                    إعادة إرسال الرمز
+                  </Button>
+                )}
+              </div>
 
               {mutation.isError && (
                 <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-md">
