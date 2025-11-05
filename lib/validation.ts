@@ -106,6 +106,38 @@ export const registrationSchema = z.object({
     .max(1000, "الرسالة طويلة جداً (الحد الأقصى 1000 حرف)")
     .optional()
     .default(""),
+  // New fields for family members
+  firstPersonName: z
+    .string()
+    .min(2, "الاسم الثلاثي للفرد الأول يجب أن يكون على الأقل حرفين")
+    .max(100, "الاسم الثلاثي طويل جداً")
+    .regex(/^[\u0600-\u06FF\s\w]+$/, "الاسم الثلاثي يجب أن يحتوي على أحرف عربية أو إنجليزية فقط"),
+  secondPersonName: z
+    .string()
+    .optional()
+    .default("")
+    .refine(
+      (val) => {
+        // If empty or undefined, it's valid (optional field)
+        if (!val || val.trim() === "") {
+          return true
+        }
+        // If has value, validate it
+        if (val.length < 2) {
+          return false
+        }
+        if (val.length > 100) {
+          return false
+        }
+        if (!/^[\u0600-\u06FF\s\w]+$/.test(val)) {
+          return false
+        }
+        return true
+      },
+      {
+        message: "الاسم الثلاثي يجب أن يحتوي على أحرف عربية أو إنجليزية فقط",
+      }
+    ),
 })
 
 export type RegistrationFormData = z.infer<typeof registrationSchema>

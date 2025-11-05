@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { registrationSchema } from "@/lib/validation"
 import { rateLimit, sanitizeString, sanitizePhone } from "@/lib/security"
-import { sendWhatsAppMessage, sendWhatsAppImage, generateRegistrationMessage, generateQRCode } from "@/lib/whatsapp"
+import { sendWhatsAppMessage, sendWhatsAppImage, generateQRCode, personalizeMessage } from "@/lib/whatsapp"
 import { getEventDate, formatEventDate } from "@/lib/date-utils"
 
 export async function POST(request: NextRequest) {
@@ -34,7 +34,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { name, phoneNumber, city, message } = validationResult.data
+    const { name, phoneNumber, city, message, firstPersonName, secondPersonName } = validationResult.data
+    
+    // Get OTP from request body (sent from client after verification)
+    const { otpCode } = body
 
     // Sanitize inputs
     const sanitizedData = {
@@ -42,6 +45,9 @@ export async function POST(request: NextRequest) {
       phoneNumber: sanitizePhone(phoneNumber),
       city: sanitizeString(city),
       message: message ? sanitizeString(message) : null,
+      firstPersonName: sanitizeString(firstPersonName),
+      secondPersonName: secondPersonName ? sanitizeString(secondPersonName) : null,
+      otpCode: otpCode || null,
     }
 
     // Insert registration using Prisma (unique constraint will handle duplicates)
@@ -52,6 +58,9 @@ export async function POST(request: NextRequest) {
           phoneNumber: sanitizedData.phoneNumber,
           city: sanitizedData.city,
           message: sanitizedData.message,
+          firstPersonName: sanitizedData.firstPersonName,
+          secondPersonName: sanitizedData.secondPersonName,
+          otpCode: sanitizedData.otpCode,
         },
         select: {
           id: true,
@@ -61,38 +70,34 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      // Send WhatsApp confirmation message with QR Code (non-blocking)
+      // Send WhatsApp confirmation message only (without QR Code)
+      // QR Code will be sent later when family is accepted
       // Don't await - send in background so it doesn't block the response
       ;(async () => {
         try {
+          // Get settings for message template
+          let settings = await prisma.settings.findFirst()
+          if (!settings) {
+            settings = await prisma.settings.create({
+              data: {},
+            })
+          }
+
           // Get event date
           const eventDate = getEventDate()
           const formattedEventDate = formatEventDate(eventDate)
 
-          // Generate message
-          const whatsappMessage = generateRegistrationMessage(
-            sanitizedData.name,
-            sanitizedData.city,
-            formattedEventDate
-          )
-
-          // Generate QR Code with registration details
-          const qrCodeData = JSON.stringify({
+          // Generate personalized message from template
+          const whatsappMessage = personalizeMessage(settings.registrationSuccessMessage, {
             name: sanitizedData.name,
-            phone: sanitizedData.phoneNumber,
             city: sanitizedData.city,
             eventDate: formattedEventDate,
-            registrationId: registration.id,
           })
 
-          // Generate QR Code image
-          const qrCodeBase64 = await generateQRCode(qrCodeData)
-
-          // Send QR Code image with the message as caption (one message)
-          await sendWhatsAppImage({
+          // Send message only (no QR Code)
+          await sendWhatsAppMessage({
             to: sanitizedData.phoneNumber,
-            imageBase64: qrCodeBase64,
-            caption: whatsappMessage
+            body: whatsappMessage
           })
         } catch (whatsappError) {
           // Silently fail - don't block registration if WhatsApp fails

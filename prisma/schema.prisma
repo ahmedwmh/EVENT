@@ -12,19 +12,36 @@ datasource db {
 }
 
 model Registration {
-  id          String   @id @default(uuid())
-  name        String   @db.VarChar(100)
-  phoneNumber String   @unique @map("phone_number") @db.VarChar(20)
-  city        String   @db.VarChar(100)
-  message     String?  @db.Text
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id               String   @id @default(uuid())
+  name             String   @db.VarChar(100)
+  phoneNumber      String   @unique @map("phone_number") @db.VarChar(20)
+  city             String   @db.VarChar(100)
+  message          String?  @db.Text
+  // New fields for family members
+  firstPersonName  String   @map("first_person_name") @db.VarChar(100)
+  secondPersonName String?  @map("second_person_name") @db.VarChar(100)
+  // Admin-only fields
+  invitationSent   Boolean  @default(false) @map("invitation_sent")
+  familyAccepted   Boolean  @default(false) @map("family_accepted")
+  notes            String?  @db.Text
+  attended         Boolean  @default(false)
+  otpCode          String?  @map("otp_code") @db.VarChar(10)
+  invitationCode   String?  @unique @map("invitation_code") @db.VarChar(20)
+  qrCodeScanned    Boolean  @default(false) @map("qr_code_scanned")
+  qrCodeScannedAt  DateTime? @map("qr_code_scanned_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   // Indexes for fast queries
   @@index([phoneNumber], name: "idx_registrations_phone")
   @@index([city], name: "idx_registrations_city")
   @@index([createdAt(sort: Desc)], name: "idx_registrations_created_at")
   @@index([updatedAt(sort: Desc)], name: "idx_registrations_updated_at")
+  @@index([invitationSent], name: "idx_registrations_invitation_sent")
+  @@index([familyAccepted], name: "idx_registrations_family_accepted")
+  @@index([attended], name: "idx_registrations_attended")
+  @@index([invitationCode], name: "idx_registrations_invitation_code")
+  @@index([qrCodeScanned], name: "idx_registrations_qr_scanned")
   // Composite index for common queries
   @@index([city, createdAt(sort: Desc)], name: "idx_registrations_city_created")
   @@map("registrations")
@@ -45,4 +62,14 @@ model Admin {
   @@index([isActive], name: "idx_admins_is_active")
   @@index([createdAt(sort: Desc)], name: "idx_admins_created_at")
   @@map("admins")
+}
+
+model Settings {
+  id                    String   @id @default(uuid())
+  registrationSuccessMessage String   @default("مرحباً {name} 👋\n\nتم استلام تسجيلك في تجمع الفنانين بنجاح! ✅\n\n📍 المدينة: {city}\n📅 تاريخ الحدث: {eventDate}\n\nنحن سعداء بانضمامك إلينا. سيتم التواصل معك قريباً عبر رقم الهاتف المقدم للتفاصيل الإضافية.\n\nشكراً لاهتمامك! 🙏\n\n© 2025 تجمع الفنانين") @map("registration_success_message") @db.Text
+  invitationMessage     String   @default("مرحباً {name} 👋\n\nنحن سعداء بدعوتك لحضور تجمع الفنانين! 🎉\n\n📅 تاريخ الحدث: {eventDate}\n\nنحن في انتظارك! 🙏\n\n© 2025 تجمع الفنانين") @map("invitation_message") @db.Text
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
 }

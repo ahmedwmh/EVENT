@@ -179,12 +179,18 @@ export function RegistrationForm() {
       phoneNumber: "",
       city: "" as any,
       message: "",
+      firstPersonName: "",
+      secondPersonName: "",
     } as RegistrationFormData,
     defaultMeta: {
       isTouched: false,
     },
     onSubmit: async ({ value }: { value: RegistrationFormData }) => {
-      mutation.mutate(value)
+      // Include OTP code in the registration data
+      mutation.mutate({
+        ...value,
+        otpCode: generatedOtp,
+      } as any)
     },
   })
 
@@ -193,12 +199,14 @@ export function RegistrationForm() {
     name: "",
     phoneNumber: "",
     city: "",
+    firstPersonName: "",
   })
 
   const [fieldErrors, setFieldErrors] = useState({
     name: false,
     phoneNumber: false,
     city: false,
+    firstPersonName: false,
   })
 
   // Update validity check function
@@ -228,6 +236,7 @@ export function RegistrationForm() {
         name: values.name || "",
         phoneNumber: values.phoneNumber || "",
         city: values.city || "",
+        firstPersonName: values.firstPersonName || "",
       }
 
       // Check errors from fieldMeta.errors (not errorsMap)
@@ -235,14 +244,17 @@ export function RegistrationForm() {
         name: !!(fieldMeta.name?.errors && fieldMeta.name.errors.length > 0),
         phoneNumber: !!(fieldMeta.phoneNumber?.errors && fieldMeta.phoneNumber.errors.length > 0),
         city: !!(fieldMeta.city?.errors && fieldMeta.city.errors.length > 0),
+        firstPersonName: !!(fieldMeta.firstPersonName?.errors && fieldMeta.firstPersonName.errors.length > 0),
       }
 
       const isFormValid = !newFieldErrors.name && 
                          !newFieldErrors.phoneNumber && 
                          !newFieldErrors.city && 
+                         !newFieldErrors.firstPersonName &&
                          newFieldValues.name.trim() && 
                          newFieldValues.phoneNumber.trim() && 
-                         newFieldValues.city
+                         newFieldValues.city &&
+                         newFieldValues.firstPersonName.trim()
 
       console.log("[Form Validity] New field values:", newFieldValues)
       console.log("[Form Validity] New field errors:", newFieldErrors)
@@ -262,9 +274,11 @@ export function RegistrationForm() {
     fieldValues.name.trim() &&
     fieldValues.phoneNumber.trim() &&
     fieldValues.city &&
+    fieldValues.firstPersonName.trim() &&
     !fieldErrors.name &&
     !fieldErrors.phoneNumber &&
-    !fieldErrors.city
+    !fieldErrors.city &&
+    !fieldErrors.firstPersonName
   )
 
   // Initial validity check and update on form state changes
@@ -334,8 +348,9 @@ export function RegistrationForm() {
                   updateFormValidity()
                   const hasErrors = form.state.fieldMeta.name?.errors?.length > 0 ||
                                     form.state.fieldMeta.phoneNumber?.errors?.length > 0 ||
-                                    form.state.fieldMeta.city?.errors?.length > 0
-                  if (!hasErrors && form.state.values.name && form.state.values.phoneNumber && form.state.values.city) {
+                                    form.state.fieldMeta.city?.errors?.length > 0 ||
+                                    form.state.fieldMeta.firstPersonName?.errors?.length > 0
+                  if (!hasErrors && form.state.values.name && form.state.values.phoneNumber && form.state.values.city && form.state.values.firstPersonName) {
                     form.handleSubmit()
                   }
                   return
@@ -348,8 +363,9 @@ export function RegistrationForm() {
                 // Check if form is valid by checking individual field errors
                 const hasErrors = form.state.fieldMeta.name?.errors?.length > 0 ||
                                   form.state.fieldMeta.phoneNumber?.errors?.length > 0 ||
-                                  form.state.fieldMeta.city?.errors?.length > 0
-                if (!hasErrors && form.state.values.name && form.state.values.phoneNumber && form.state.values.city) {
+                                  form.state.fieldMeta.city?.errors?.length > 0 ||
+                                  form.state.fieldMeta.firstPersonName?.errors?.length > 0
+                if (!hasErrors && form.state.values.name && form.state.values.phoneNumber && form.state.values.city && form.state.values.firstPersonName) {
                   // Form is valid, send OTP
                   otpMutation.mutate({ phoneNumber: form.state.values.phoneNumber })
                 }
@@ -603,6 +619,180 @@ export function RegistrationForm() {
                       <FieldError error={field.state.meta.errors[0]} />
                     </div>
                   )}
+                </form.Field>
+
+                {/* First Person Name Field */}
+                <form.Field
+                  name="firstPersonName"
+                  validators={{
+                    onBlur: (value: any) => {
+                      let stringValue: string
+                      if (typeof value === "string") {
+                        stringValue = value
+                      } else if (value && typeof value === "object") {
+                        stringValue = (value.value || value.toString() || "").trim()
+                      } else {
+                        stringValue = String(value || "")
+                      }
+                      if (!stringValue || stringValue.trim() === "") {
+                        return "الاسم الثلاثي للفرد الأول مطلوب"
+                      }
+                      const result = (registrationSchema.shape as any).firstPersonName?.safeParse(stringValue)
+                      if (!result) {
+                        return "قيمة غير صحيحة"
+                      }
+                      if (!result.success) {
+                        return result.error.issues[0]?.message || "قيمة غير صحيحة"
+                      }
+                      return undefined
+                    },
+                  }}
+                >
+                  {(field: any) => (
+                    <div className="space-y-2">
+                      <Label htmlFor={field.name}>الاسم الثلاثي للفرد الأول من العائلة *</Label>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => {
+                          const newValue = e.target.value
+                          field.handleChange(newValue)
+                          if (field.state.meta.errors.length > 0) {
+                            field.setMeta((prev: any) => ({
+                              ...prev,
+                              errors: [],
+                            }))
+                          }
+                          setTimeout(() => {
+                            updateFormValidity()
+                          }, 0)
+                        }}
+                        placeholder="أدخل الاسم الثلاثي للفرد الأول"
+                        className={
+                          field.state.meta.errors.length > 0
+                            ? "border-destructive"
+                            : ""
+                        }
+                      />
+                      <FieldError error={field.state.meta.errors[0]} />
+                    </div>
+                  )}
+                </form.Field>
+
+                {/* Second Person Name Field */}
+                <form.Field
+                  name="secondPersonName"
+                  validators={{
+                    onChange: (value: any) => {
+                      // Optional field - empty is always valid
+                      // Handle both object and string values from TanStack Form
+                      const actualValue = typeof value === 'object' && value !== null ? value.value : value
+                      
+                      if (!actualValue || actualValue === "" || actualValue === null || actualValue === undefined) {
+                        return undefined
+                      }
+                      
+                      const stringValue = String(actualValue).trim()
+                      
+                      // Empty after trim is valid
+                      if (stringValue === "") {
+                        return undefined
+                      }
+                      
+                      // Only validate if value is provided and not empty
+                      // Check length
+                      if (stringValue.length < 2) {
+                        return "الاسم الثلاثي يجب أن يكون على الأقل حرفين"
+                      }
+                      if (stringValue.length > 100) {
+                        return "الاسم الثلاثي طويل جداً"
+                      }
+                      
+                      // Check format
+                      if (!/^[\u0600-\u06FF\s\w]+$/.test(stringValue)) {
+                        return "الاسم الثلاثي يجب أن يحتوي على أحرف عربية أو إنجليزية فقط"
+                      }
+                      
+                      return undefined
+                    },
+                    onBlur: (value: any) => {
+                      // Optional field - empty is always valid
+                      // Handle both object and string values from TanStack Form
+                      const actualValue = typeof value === 'object' && value !== null ? value.value : value
+                      
+                      if (!actualValue || actualValue === "" || actualValue === null || actualValue === undefined) {
+                        return undefined
+                      }
+                      
+                      const stringValue = String(actualValue).trim()
+                      
+                      // Empty after trim is valid
+                      if (stringValue === "") {
+                        return undefined
+                      }
+                      
+                      // Only validate if value is provided and not empty
+                      // Check length
+                      if (stringValue.length < 2) {
+                        return "الاسم الثلاثي يجب أن يكون على الأقل حرفين"
+                      }
+                      if (stringValue.length > 100) {
+                        return "الاسم الثلاثي طويل جداً"
+                      }
+                      
+                      // Check format
+                      if (!/^[\u0600-\u06FF\s\w]+$/.test(stringValue)) {
+                        return "الاسم الثلاثي يجب أن يحتوي على أحرف عربية أو إنجليزية فقط"
+                      }
+                      
+                      return undefined
+                    },
+                  }}
+                >
+                  {(field: any) => {
+                    // Check if field is empty - this is the key fix
+                    const fieldValue = field.state.value || ""
+                    const isEmpty = !fieldValue || String(fieldValue).trim() === ""
+                    const hasErrors = field.state.meta.errors.length > 0 && !isEmpty
+                    
+                    return (
+                      <div className="space-y-2">
+                        <Label htmlFor={field.name}>الاسم الثلاثي للفرد الثاني من العائلة (اختياري)</Label>
+                        <Input
+                          id={field.name}
+                          name={field.name}
+                          value={fieldValue}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => {
+                            const newValue = e.target.value
+                            field.handleChange(newValue)
+                            // Clear errors immediately if field becomes empty
+                            if (!newValue || newValue.trim() === "") {
+                              // Force clear errors
+                              field.setMeta((prev: any) => ({
+                                ...prev,
+                                errors: [],
+                              }))
+                            }
+                            setTimeout(() => {
+                              updateFormValidity()
+                            }, 0)
+                          }}
+                          placeholder="أدخل الاسم الثلاثي للفرد الثاني (اختياري)"
+                          className={
+                            hasErrors
+                              ? "border-destructive"
+                              : ""
+                          }
+                        />
+                        {hasErrors && (
+                          <FieldError error={field.state.meta.errors[0]} />
+                        )}
+                      </div>
+                    )
+                  }}
                 </form.Field>
               </div>
 

@@ -264,14 +264,31 @@ export async function sendWhatsAppImage({ to, imageUrl, imageBase64, caption }: 
   }
 }
 
+// This function is now deprecated - messages come from settings
+// Keeping for backward compatibility
 export function generateRegistrationMessage(name: string, city: string, eventDate: string): string {
   return `مرحباً ${name} 👋
 
 تم تسجيلك بالمهرجان بنجاح! ✅
 
-📍 المدينة: الناصرية
-📅 تاريخ الحدث: 15-11-2025
+📍 المدينة: ${city}
+📅 تاريخ الحدث: ${eventDate}
 
 نحن سعداء بانضمامك إلينا. سيتم التواصل معك قريباً عبر رقم الهاتف المقدم للتفاصيل الإضافية.`
+}
+
+// Generate personalized message from template
+export function personalizeMessage(template: string, data: { name?: string; city?: string; eventDate?: string }): string {
+  let message = template
+  if (data.name) {
+    message = message.replace(/{name}/g, data.name)
+  }
+  if (data.city) {
+    message = message.replace(/{city}/g, data.city)
+  }
+  if (data.eventDate) {
+    message = message.replace(/{eventDate}/g, data.eventDate)
+  }
+  return message
 }
 
